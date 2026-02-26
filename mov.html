@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>動画→音声抽出（HTML版）</title>
+
+<style>
+body{
+    font-family:Arial;
+    background:linear-gradient(135deg,#1e3c72,#2a5298);
+    color:white;
+    text-align:center;
+    padding:30px;
+}
+.container{
+    background:rgba(255,255,255,0.1);
+    padding:30px;
+    border-radius:20px;
+}
+input{
+    padding:10px;
+}
+button{
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    background:#ff9800;
+    color:white;
+    cursor:pointer;
+}
+button:hover{background:#e68900;}
+audio{margin-top:20px;width:100%;}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>🎵 動画 → 音声抽出</h1>
+
+<input type="file" id="videoInput" accept="video/*"><br><br>
+
+<button onclick="extractAudio()">音声を取り出す</button>
+
+<br><br>
+
+<audio id="audioPlayer" controls></audio>
+
+<br><br>
+
+<a id="downloadLink" style="color:white;font-weight:bold;"></a>
+
+</div>
+
+<script>
+let audioBlob = null;
+
+function extractAudio(){
+    const fileInput = document.getElementById("videoInput");
+    const file = fileInput.files[0];
+
+    if(!file){
+        alert("動画ファイルを選択してください");
+        return;
+    }
+
+    const video = document.createElement("video");
+    video.src = URL.createObjectURL(file);
+
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioContext.createMediaElementSource(video);
+    const destination = audioContext.createMediaStreamDestination();
+
+    source.connect(destination);
+    source.connect(audioContext.destination);
+
+    const mediaRecorder = new MediaRecorder(destination.stream);
+    let chunks = [];
+
+    mediaRecorder.ondataavailable = e => chunks.push(e.data);
+
+    mediaRecorder.onstop = () => {
+        audioBlob = new Blob(chunks, { type: "audio/webm" });
+        const url = URL.createObjectURL(audioBlob);
+
+        document.getElementById("audioPlayer").src = url;
+
+        const downloadLink = document.getElementById("downloadLink");
+        downloadLink.href = url;
+        downloadLink.download = "extracted_audio.webm";
+        downloadLink.innerText = "⬇ 音声をダウンロード";
+    };
+
+    mediaRecorder.start();
+    video.play();
+
+    video.onended = () => {
+        mediaRecorder.stop();
+    };
+}
+</script>
+
+</body>
+</html>
