@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ふわふわ🎵動画→音声変換</title>
+
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:"Hiragino Maru Gothic ProN", "Arial Rounded MT Bold", sans-serif;
+    background:#fffaf0;
+    color:#444;
+    text-align:center;
+    padding:40px;
+}
+
+.container{
+    background:white;
+    padding:40px;
+    border-radius:30px;
+    max-width:600px;
+    margin:auto;
+    box-shadow:0 10px 30px rgba(0,0,0,0.08);
+}
+
+h1{
+    color:#ffb6b9;
+}
+
+p{
+    color:#777;
+}
+
+.file-box{
+    border:2px dashed #ffd6d6;
+    padding:30px;
+    border-radius:25px;
+    background:#fffaf0;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.file-box:hover{
+    background:#ffeaea;
+}
+
+button{
+    margin-top:20px;
+    padding:12px 30px;
+    border:none;
+    border-radius:50px;
+    background:#ffb6b9;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    background:#ff9aa2;
+}
+
+audio{
+    width:100%;
+    margin-top:20px;
+    border-radius:20px;
+}
+
+#status{
+    margin-top:15px;
+    font-size:14px;
+}
+
+#download{
+    display:block;
+    margin-top:15px;
+    font-weight:bold;
+    color:#ff9aa2;
+    text-decoration:none;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>🎀 ふわふわ音声抽出 🎀</h1>
+<p>動画から音楽だけ取り出します♪</p>
+
+<div class="file-box" onclick="document.getElementById('fileInput').click()">
+    📁 ここをクリックして動画を選択
+</div>
+
+<input type="file" id="fileInput" accept="video/*" hidden>
+
+<button onclick="convert()">🎵 MP3に変換する</button>
+
+<p id="status"></p>
+
+<audio id="audio" controls></audio>
+
+<a id="download"></a>
+
+</div>
+
+<script>
+const { createFFmpeg, fetchFile } = FFmpeg;
+const ffmpeg = createFFmpeg({ log: false });
+
+async function convert(){
+    const file = document.getElementById("fileInput").files[0];
+    const status = document.getElementById("status");
+
+    if(!file){
+        alert("動画を選択してください 🌸");
+        return;
+    }
+
+    status.innerText = "💭 変換中です…ちょっと待ってね♪";
+
+    if(!ffmpeg.isLoaded()){
+        await ffmpeg.load();
+    }
+
+    ffmpeg.FS("writeFile","input",await fetchFile(file));
+    await ffmpeg.run("-i","input","-vn","-acodec","libmp3lame","output.mp3");
+
+    const data = ffmpeg.FS("readFile","output.mp3");
+    const blob = new Blob([data.buffer],{type:"audio/mp3"});
+    const url = URL.createObjectURL(blob);
+
+    document.getElementById("audio").src = url;
+
+    const dl = document.getElementById("download");
+    dl.href = url;
+    dl.download = "audio.mp3";
+    dl.innerText = "⬇ ダウンロードはこちら";
+
+    status.innerText = "✨ 変換できました！";
+}
+</script>
+
+</body>
+</html>
