@@ -1,102 +1,100 @@
-<!DOCTYPE html>
+/video-audio-extractor
+ └ index.html
+ <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>動画→音声抽出（HTML版）</title>
+<title>Video Audio Extractor</title>
+
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js"></script>
 
 <style>
 body{
-    font-family:Arial;
+    margin:0;
+    font-family:Arial, sans-serif;
     background:linear-gradient(135deg,#1e3c72,#2a5298);
     color:white;
     text-align:center;
-    padding:30px;
+    padding:40px;
 }
 .container{
     background:rgba(255,255,255,0.1);
-    padding:30px;
+    padding:40px;
     border-radius:20px;
+    max-width:600px;
+    margin:auto;
 }
 input{
-    padding:10px;
+    margin:20px 0;
 }
 button{
-    padding:10px 20px;
+    padding:12px 25px;
     border:none;
     border-radius:10px;
     background:#ff9800;
     color:white;
+    font-size:16px;
     cursor:pointer;
 }
-button:hover{background:#e68900;}
-audio{margin-top:20px;width:100%;}
+button:hover{ background:#e68900; }
+audio{ width:100%; margin-top:20px; }
+#status{ margin-top:20px; }
 </style>
 </head>
 <body>
 
 <div class="container">
-<h1>🎵 動画 → 音声抽出</h1>
+<h1>🎵 Video → MP3 Extractor</h1>
 
-<input type="file" id="videoInput" accept="video/*"><br><br>
+<p>動画ファイルを選択するとMP3に変換します。</p>
 
-<button onclick="extractAudio()">音声を取り出す</button>
+<input type="file" id="fileInput" accept="video/*"><br>
 
-<br><br>
+<button onclick="convert()">Convert to MP3</button>
 
-<audio id="audioPlayer" controls></audio>
+<p id="status"></p>
 
-<br><br>
+<audio id="audio" controls></audio><br>
 
-<a id="downloadLink" style="color:white;font-weight:bold;"></a>
-
+<a id="download"></a>
 </div>
 
 <script>
-let audioBlob = null;
+const { createFFmpeg, fetchFile } = FFmpeg;
+const ffmpeg = createFFmpeg({ log: false });
 
-function extractAudio(){
-    const fileInput = document.getElementById("videoInput");
-    const file = fileInput.files[0];
+async function convert(){
+    const file = document.getElementById("fileInput").files[0];
+    const status = document.getElementById("status");
 
     if(!file){
         alert("動画ファイルを選択してください");
         return;
     }
 
-    const video = document.createElement("video");
-    video.src = URL.createObjectURL(file);
+    status.innerText = "🔄 変換中...";
 
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const source = audioContext.createMediaElementSource(video);
-    const destination = audioContext.createMediaStreamDestination();
+    if(!ffmpeg.isLoaded()){
+        await ffmpeg.load();
+    }
 
-    source.connect(destination);
-    source.connect(audioContext.destination);
+    ffmpeg.FS("writeFile","input",await fetchFile(file));
+    await ffmpeg.run("-i","input","-vn","-acodec","libmp3lame","output.mp3");
 
-    const mediaRecorder = new MediaRecorder(destination.stream);
-    let chunks = [];
+    const data = ffmpeg.FS("readFile","output.mp3");
+    const blob = new Blob([data.buffer],{type:"audio/mp3"});
+    const url = URL.createObjectURL(blob);
 
-    mediaRecorder.ondataavailable = e => chunks.push(e.data);
+    document.getElementById("audio").src = url;
 
-    mediaRecorder.onstop = () => {
-        audioBlob = new Blob(chunks, { type: "audio/webm" });
-        const url = URL.createObjectURL(audioBlob);
+    const dl = document.getElementById("download");
+    dl.href = url;
+    dl.download = "audio.mp3";
+    dl.innerText = "⬇ Download MP3";
+    dl.style.color = "white";
 
-        document.getElementById("audioPlayer").src = url;
-
-        const downloadLink = document.getElementById("downloadLink");
-        downloadLink.href = url;
-        downloadLink.download = "extracted_audio.webm";
-        downloadLink.innerText = "⬇ 音声をダウンロード";
-    };
-
-    mediaRecorder.start();
-    video.play();
-
-    video.onended = () => {
-        mediaRecorder.stop();
-    };
+    status.innerText = "✅ 変換完了";
 }
 </script>
 
