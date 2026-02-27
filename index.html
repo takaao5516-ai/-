@@ -3,236 +3,250 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ふわふわ変換ラボ</title>
+<title>ふわふわマルチツール</title>
+
+<!-- ライブラリ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
 
 <style>
 body{
-    margin:0;
-    font-family:"Hiragino Maru Gothic ProN",sans-serif;
-    background:linear-gradient(135deg,#ffd6f9,#c8f1ff);
-    text-align:center;
+  margin:0;
+  font-family:"Hiragino Maru Gothic ProN", sans-serif;
+  background:#fffaf0;
 }
 
-/* 画面 */
+/* ===== タブ ===== */
+.tabs{
+  display:flex;
+  background:#fffaf0;
+  box-shadow:0 5px 20px rgba(0,0,0,0.08);
+}
+
+.tab{
+  flex:1;
+  padding:15px;
+  text-align:center;
+  cursor:pointer;
+  background:#fffaf0;
+  font-weight:bold;
+}
+
+.tab.active{
+  background:#fdf3db;
+}
+
+/* ===== 画面 ===== */
 .screen{
-    padding:30px 15px 60px;
+  display:none;
+  padding:20px;
 }
 
-/* カード */
-.card{
-    background:white;
-    padding:25px;
-    border-radius:30px;
-    width:100%;
-    max-width:480px;
-    margin:auto;
-    box-shadow:0 15px 40px rgba(0,0,0,0.15);
+.screen.active{
+  display:block;
 }
 
-/* 🌸 メニューボタン */
-.menu-btn{
-    width:100%;
-    padding:14px;
-    margin:8px 0;
-    border:none;
-    border-radius:25px;
-    background:#ff9ad5;
-    color:white;
-    font-size:16px;
-    font-weight:bold;
+/* ===== TXT変換 ===== */
+.container{
+  background:#ffffff;
+  max-width:500px;
+  margin:30px auto;
+  padding:30px;
+  border-radius:30px;
+  box-shadow:0 15px 40px rgba(0,0,0,0.08);
+  text-align:center;
+  animation:float 3s ease-in-out infinite;
 }
 
-/* 🎀 ふわふわ変換ボタン */
-.fuwa-btn{
-    width:100%;
-    padding:16px;
-    margin:15px 0;
-    border:none;
-    border-radius:40px;
-    font-size:17px;
-    font-weight:bold;
-    color:white;
-    background:linear-gradient(45deg,#ff9ad5,#7ddfff,#ffd6f9);
-    background-size:300% 300%;
-    animation:gradientMove 5s ease infinite, float 3s ease-in-out infinite;
-    box-shadow:0 8px 20px rgba(255,150,200,0.4);
-    transition:0.2s;
-}
-
-.fuwa-btn:active{
-    transform:scale(0.92);
-}
-
-/* グラデーション */
-@keyframes gradientMove{
-    0%{background-position:0% 50%;}
-    50%{background-position:100% 50%;}
-    100%{background-position:0% 50%;}
-}
-
-/* 浮く */
 @keyframes float{
-    0%{transform:translateY(0px);}
-    50%{transform:translateY(-6px);}
-    100%{transform:translateY(0px);}
+  0%{transform:translateY(0px);}
+  50%{transform:translateY(-8px);}
+  100%{transform:translateY(0px);}
 }
 
-/* 進捗バー */
-.progress-box{
-    margin-top:20px;
-    width:100%;
-    background:#f3f3f3;
-    border-radius:50px;
-    overflow:hidden;
-    box-shadow:inset 0 4px 10px rgba(0,0,0,0.08);
-}
-
-.progress-bar{
-    height:24px;
-    width:0%;
-    border-radius:50px;
-    background:linear-gradient(90deg,#ff9ad5,#7ddfff,#ffd6f9);
-    background-size:300% 300%;
-    animation:gradientMove 5s ease infinite;
-    color:white;
-    font-size:13px;
-    line-height:24px;
-    transition:0.4s ease;
-    position:relative;
-}
-
-.progress-bar::after{
-    content:"";
-    position:absolute;
-    top:0;
-    left:-50%;
-    width:50%;
-    height:100%;
-    background:rgba(255,255,255,0.5);
-    transform:skewX(-20deg);
-    animation:shine 2s infinite;
-}
-
-@keyframes shine{
-    0%{left:-50%;}
-    100%{left:120%;}
-}
-
-/* ファイル選択ボタン */
 .file-label{
-    display:block;
+  display:block;
+  padding:20px;
+  background:#fffaf0;
+  border:2px dashed #e6d8b5;
+  border-radius:25px;
+  cursor:pointer;
+  margin-bottom:20px;
+}
+
+input[type="file"]{
+  display:none;
+}
+
+button{
+  background:#fffaf0;
+  border:none;
+  padding:15px 20px;
+  margin:10px;
+  border-radius:30px;
+  cursor:pointer;
+  font-size:16px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* ===== HTMLプレビュー ===== */
+.editor-container{
+  height:80vh;
+  display:flex;
+  flex-direction:column;
+}
+
+.editor-body{
+  flex:1;
+  display:flex;
+}
+
+textarea{
+  width:50%;
+  border:none;
+  padding:20px;
+  font-size:16px;
+  outline:none;
+  resize:none;
+  background:#fffaf0;
+}
+
+iframe{
+  width:50%;
+  border:none;
+}
+
+.editor-header{
+  background:#fffaf0;
+  padding:10px;
+  text-align:center;
+  box-shadow:0 5px 20px rgba(0,0,0,0.08);
+}
+
+.fullscreen iframe{
+  width:100%;
+}
+
+@media(max-width:768px){
+  .editor-body{
+    flex-direction:column;
+  }
+  textarea,iframe{
     width:100%;
-    padding:15px;
-    background:#7ddfff;
-    color:white;
-    border-radius:25px;
-    margin:10px 0;
-    font-weight:bold;
+    height:50%;
+  }
 }
 </style>
 </head>
+
 <body>
 
-<!-- 🌸 メニュー -->
-<div id="menuScreen" class="screen">
-<div class="card">
-<h2>🌸 ふわふわ変換ラボ 🌸</h2>
-
-<button class="menu-btn" onclick="openScreen('img2pdf')">画像 → PDF</button>
-<button class="menu-btn" onclick="openScreen('img2ppt')">画像 → PPTX</button>
-<button class="menu-btn" onclick="openScreen('pdf2ppt')">PDF → PPTX</button>
-<button class="menu-btn" onclick="openScreen('video2mp3')">動画 → MP3</button>
-
-</div>
+<!-- タブ -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('txt')">TXT変換</div>
+  <div class="tab" onclick="switchTab('html')">HTMLプレビュー</div>
 </div>
 
-<!-- ☁️ 変換画面 -->
-<div id="convertScreen" class="screen" style="display:none;">
-<div class="card">
+<!-- ===== TXT変換画面 ===== -->
+<div id="txt" class="screen active">
+  <div class="container">
+    <h2>🌸 TXT → PDF / PPTX 🌸</h2>
 
-<h2 id="title">変換</h2>
+    <label class="file-label">
+      📄 TXTファイルを選択
+      <input type="file" id="fileInput" accept=".txt">
+    </label>
 
-<input type="file" id="fileInput" style="display:none;">
-<label for="fileInput" class="file-label">📁 ファイルを選ぶ</label>
+    <button onclick="convertToPDF()">PDFに変換</button>
+    <button onclick="convertToPPT()">PPTXに変換</button>
 
-<div id="fileName" style="font-size:14px;color:#666;"></div>
-
-<button class="fuwa-btn" onclick="startConvert()">
-✨ ふわっと変換する ✨
-</button>
-
-<button class="menu-btn" onclick="backToMenu()">⬅ もどる</button>
-
-<div class="progress-box">
-<div class="progress-bar" id="progressBar">0%</div>
+    <div style="font-size:12px;color:#c5b79e;">ふわふわ変換ツール ✨</div>
+  </div>
 </div>
 
-</div>
+<!-- ===== HTMLプレビュー画面 ===== -->
+<div id="html" class="screen">
+  <div class="editor-container">
+
+    <div class="editor-header">
+      HTMLライブプレビュー 🚀
+      <button onclick="downloadHTML()">ダウンロード</button>
+      <button onclick="activatePreview()">起動成功</button>
+    </div>
+
+    <div class="editor-body" id="editorContainer">
+      <textarea id="code" placeholder="ここにコードを打つ"></textarea>
+      <iframe id="preview"></iframe>
+    </div>
+
+  </div>
 </div>
 
 <script>
-let currentMode="";
+/* ===== タブ切替 ===== */
+function switchTab(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
 
-function openScreen(mode){
-    currentMode = mode;
-    document.getElementById("menuScreen").style.display="none";
-    document.getElementById("convertScreen").style.display="block";
-
-    const titleMap={
-        img2pdf:"☁️ 画像 → PDF",
-        img2ppt:"☁️ 画像 → PPTX",
-        pdf2ppt:"☁️ PDF → PPTX",
-        video2mp3:"☁️ 動画 → MP3"
-    };
-
-    document.getElementById("title").innerText = titleMap[mode];
-
-    const input = document.getElementById("fileInput");
-    input.value="";
-
-    if(mode==="video2mp3"){
-        input.accept="video/*";
-    }else if(mode==="pdf2ppt"){
-        input.accept="application/pdf";
-    }else{
-        input.accept="image/*";
-    }
-
-    window.scrollTo(0,0);
+  document.getElementById(id).classList.add("active");
+  event.target.classList.add("active");
 }
 
-function backToMenu(){
-    document.getElementById("convertScreen").style.display="none";
-    document.getElementById("menuScreen").style.display="block";
-    updateProgress(0);
-}
+/* ===== TXT変換 ===== */
+let fileContent="";
 
-const fileInput = document.getElementById("fileInput");
-const fileName = document.getElementById("fileName");
+document.getElementById("fileInput").addEventListener("change",function(e){
+  const file=e.target.files[0];
+  if(!file)return;
 
-fileInput.addEventListener("change", function(){
-    if(this.files.length > 0){
-        fileName.innerText = "選択中: " + this.files[0].name;
-    }
+  const reader=new FileReader();
+  reader.onload=function(event){
+    fileContent=event.target.result;
+    alert("読み込み完了 ✨");
+  };
+  reader.readAsText(file,"UTF-8");
 });
 
-function updateProgress(p){
-    const bar=document.getElementById("progressBar");
-    bar.style.width=p+"%";
-    bar.innerText=p+"%";
+function convertToPDF(){
+  if(!fileContent){alert("TXTファイルを選択してね 🌸");return;}
+  const { jsPDF } = window.jspdf;
+  const doc=new jsPDF();
+  const lines=doc.splitTextToSize(fileContent,180);
+  doc.text(lines,10,10);
+  doc.save("converted.pdf");
 }
 
-function startConvert(){
-    const file=fileInput.files[0];
-    if(!file){
-        alert("ファイルを選んでね🌸");
-        return;
-    }
+function convertToPPT(){
+  if(!fileContent){alert("TXTファイルを選択してね 🌸");return;}
+  let pptx=new PptxGenJS();
+  let slide=pptx.addSlide();
+  slide.addText(fileContent,{
+    x:1,y:1,w:8,h:5,fontSize:18,color:"333333"
+  });
+  pptx.writeFile("converted.pptx");
+}
 
-    updateProgress(20);
-    setTimeout(()=>updateProgress(50),500);
-    setTimeout(()=>updateProgress(80),1000);
-    setTimeout(()=>updateProgress(100),1500);
+/* ===== HTMLプレビュー ===== */
+const textarea=document.getElementById("code");
+const preview=document.getElementById("preview");
+const container=document.getElementById("editorContainer");
+
+function updatePreview(){
+  preview.srcdoc=textarea.value||"<h2>プレビュー待機中...</h2>";
+}
+textarea.addEventListener("input",updatePreview);
+updatePreview();
+
+function downloadHTML(){
+  const blob=new Blob([textarea.value],{type:"text/html"});
+  const link=document.createElement("a");
+  link.href=URL.createObjectURL(blob);
+  link.download="index.html";
+  link.click();
+}
+
+function activatePreview(){
+  container.classList.add("fullscreen");
 }
 </script>
 
