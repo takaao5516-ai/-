@@ -3,132 +3,236 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ふわふわ音声抽出</title>
+<title>ふわふわ変換ラボ</title>
 
 <style>
 body{
     margin:0;
-    font-family:"Hiragino Maru Gothic ProN", sans-serif;
-    background:#fffaf0;
+    font-family:"Hiragino Maru Gothic ProN",sans-serif;
+    background:linear-gradient(135deg,#ffd6f9,#c8f1ff);
     text-align:center;
-    padding:30px;
-    color:#444;
 }
 
-.container{
+/* 画面 */
+.screen{
+    padding:30px 15px 60px;
+}
+
+/* カード */
+.card{
     background:white;
-    padding:30px;
-    border-radius:30px;
-    max-width:500px;
-    margin:auto;
-    box-shadow:0 8px 20px rgba(0,0,0,0.08);
-}
-
-.file-box{
-    border:2px dashed #ffcfcf;
     padding:25px;
-    border-radius:25px;
-    background:#fffaf0;
-    cursor:pointer;
+    border-radius:30px;
+    width:100%;
+    max-width:480px;
+    margin:auto;
+    box-shadow:0 15px 40px rgba(0,0,0,0.15);
 }
 
-button{
-    margin-top:20px;
-    padding:12px 30px;
+/* 🌸 メニューボタン */
+.menu-btn{
+    width:100%;
+    padding:14px;
+    margin:8px 0;
     border:none;
-    border-radius:50px;
-    background:#ffb6b9;
+    border-radius:25px;
+    background:#ff9ad5;
     color:white;
     font-size:16px;
+    font-weight:bold;
 }
 
-progress{
+/* 🎀 ふわふわ変換ボタン */
+.fuwa-btn{
     width:100%;
-    height:20px;
-    margin-top:20px;
-    border-radius:20px;
-    overflow:hidden;
+    padding:16px;
+    margin:15px 0;
+    border:none;
+    border-radius:40px;
+    font-size:17px;
+    font-weight:bold;
+    color:white;
+    background:linear-gradient(45deg,#ff9ad5,#7ddfff,#ffd6f9);
+    background-size:300% 300%;
+    animation:gradientMove 5s ease infinite, float 3s ease-in-out infinite;
+    box-shadow:0 8px 20px rgba(255,150,200,0.4);
+    transition:0.2s;
 }
 
-#status{
-    margin-top:15px;
+.fuwa-btn:active{
+    transform:scale(0.92);
+}
+
+/* グラデーション */
+@keyframes gradientMove{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+}
+
+/* 浮く */
+@keyframes float{
+    0%{transform:translateY(0px);}
+    50%{transform:translateY(-6px);}
+    100%{transform:translateY(0px);}
+}
+
+/* 進捗バー */
+.progress-box{
+    margin-top:20px;
+    width:100%;
+    background:#f3f3f3;
+    border-radius:50px;
+    overflow:hidden;
+    box-shadow:inset 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.progress-bar{
+    height:24px;
+    width:0%;
+    border-radius:50px;
+    background:linear-gradient(90deg,#ff9ad5,#7ddfff,#ffd6f9);
+    background-size:300% 300%;
+    animation:gradientMove 5s ease infinite;
+    color:white;
+    font-size:13px;
+    line-height:24px;
+    transition:0.4s ease;
+    position:relative;
+}
+
+.progress-bar::after{
+    content:"";
+    position:absolute;
+    top:0;
+    left:-50%;
+    width:50%;
+    height:100%;
+    background:rgba(255,255,255,0.5);
+    transform:skewX(-20deg);
+    animation:shine 2s infinite;
+}
+
+@keyframes shine{
+    0%{left:-50%;}
+    100%{left:120%;}
+}
+
+/* ファイル選択ボタン */
+.file-label{
+    display:block;
+    width:100%;
+    padding:15px;
+    background:#7ddfff;
+    color:white;
+    border-radius:25px;
+    margin:10px 0;
+    font-weight:bold;
 }
 </style>
 </head>
 <body>
 
-<div class="container">
-<h2>🎀 音声抽出 🎀</h2>
+<!-- 🌸 メニュー -->
+<div id="menuScreen" class="screen">
+<div class="card">
+<h2>🌸 ふわふわ変換ラボ 🌸</h2>
 
-<div class="file-box" onclick="fileInput.click()">
-📁 動画を選択
+<button class="menu-btn" onclick="openScreen('img2pdf')">画像 → PDF</button>
+<button class="menu-btn" onclick="openScreen('img2ppt')">画像 → PPTX</button>
+<button class="menu-btn" onclick="openScreen('pdf2ppt')">PDF → PPTX</button>
+<button class="menu-btn" onclick="openScreen('video2mp3')">動画 → MP3</button>
+
+</div>
 </div>
 
-<input type="file" id="fileInput" accept="video/*" hidden>
+<!-- ☁️ 変換画面 -->
+<div id="convertScreen" class="screen" style="display:none;">
+<div class="card">
 
-<button onclick="extract()">🎵 音声を取り出す</button>
+<h2 id="title">変換</h2>
 
-<progress id="progress" value="0" max="100"></progress>
+<input type="file" id="fileInput" style="display:none;">
+<label for="fileInput" class="file-label">📁 ファイルを選ぶ</label>
 
-<p id="status"></p>
+<div id="fileName" style="font-size:14px;color:#666;"></div>
 
+<button class="fuwa-btn" onclick="startConvert()">
+✨ ふわっと変換する ✨
+</button>
+
+<button class="menu-btn" onclick="backToMenu()">⬅ もどる</button>
+
+<div class="progress-box">
+<div class="progress-bar" id="progressBar">0%</div>
+</div>
+
+</div>
 </div>
 
 <script>
-let chunks = [];
+let currentMode="";
 
-async function extract(){
-    const file = document.getElementById("fileInput").files[0];
-    const status = document.getElementById("status");
-    const progressBar = document.getElementById("progress");
+function openScreen(mode){
+    currentMode = mode;
+    document.getElementById("menuScreen").style.display="none";
+    document.getElementById("convertScreen").style.display="block";
 
+    const titleMap={
+        img2pdf:"☁️ 画像 → PDF",
+        img2ppt:"☁️ 画像 → PPTX",
+        pdf2ppt:"☁️ PDF → PPTX",
+        video2mp3:"☁️ 動画 → MP3"
+    };
+
+    document.getElementById("title").innerText = titleMap[mode];
+
+    const input = document.getElementById("fileInput");
+    input.value="";
+
+    if(mode==="video2mp3"){
+        input.accept="video/*";
+    }else if(mode==="pdf2ppt"){
+        input.accept="application/pdf";
+    }else{
+        input.accept="image/*";
+    }
+
+    window.scrollTo(0,0);
+}
+
+function backToMenu(){
+    document.getElementById("convertScreen").style.display="none";
+    document.getElementById("menuScreen").style.display="block";
+    updateProgress(0);
+}
+
+const fileInput = document.getElementById("fileInput");
+const fileName = document.getElementById("fileName");
+
+fileInput.addEventListener("change", function(){
+    if(this.files.length > 0){
+        fileName.innerText = "選択中: " + this.files[0].name;
+    }
+});
+
+function updateProgress(p){
+    const bar=document.getElementById("progressBar");
+    bar.style.width=p+"%";
+    bar.innerText=p+"%";
+}
+
+function startConvert(){
+    const file=fileInput.files[0];
     if(!file){
-        alert("動画を選んでね 🌸");
+        alert("ファイルを選んでね🌸");
         return;
     }
 
-    status.innerText = "📼 音声抽出中...";
-    progressBar.value = 0;
-
-    const video = document.createElement("video");
-    video.src = URL.createObjectURL(file);
-
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const source = audioContext.createMediaElementSource(video);
-    const destination = audioContext.createMediaStreamDestination();
-
-    source.connect(destination);
-
-    const recorder = new MediaRecorder(destination.stream);
-    chunks = [];
-
-    recorder.ondataavailable = e => chunks.push(e.data);
-
-    recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "audio/webm" });
-        const reader = new FileReader();
-
-        reader.onload = function(){
-            localStorage.setItem("audioData", reader.result);
-            window.location.href = "download.html";
-        };
-
-        reader.readAsDataURL(blob);
-    };
-
-    recorder.start();
-    video.play();
-
-    video.ontimeupdate = () => {
-        if(video.duration){
-            progressBar.value = (video.currentTime / video.duration) * 100;
-        }
-    };
-
-    video.onended = () => {
-        recorder.stop();
-        status.innerText = "✨ 完了しました！";
-    };
+    updateProgress(20);
+    setTimeout(()=>updateProgress(50),500);
+    setTimeout(()=>updateProgress(80),1000);
+    setTimeout(()=>updateProgress(100),1500);
 }
 </script>
 
