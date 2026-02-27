@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ふわふわマルチツール</title>
+<title>ふわふわスーパー変換ラボ</title>
 
 <!-- ライブラリ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -11,241 +11,261 @@
 
 <style>
 body{
-  margin:0;
-  font-family:"Hiragino Maru Gothic ProN", sans-serif;
-  background:#fffaf0;
+    margin:0;
+    font-family:"Hiragino Maru Gothic ProN",sans-serif;
+    background:linear-gradient(135deg,#ffd6f9,#c8f1ff);
+    text-align:center;
 }
 
 /* ===== タブ ===== */
 .tabs{
-  display:flex;
-  background:#fffaf0;
-  box-shadow:0 5px 20px rgba(0,0,0,0.08);
+    display:flex;
+    background:white;
+    box-shadow:0 5px 20px rgba(0,0,0,0.1);
 }
 
 .tab{
-  flex:1;
-  padding:15px;
-  text-align:center;
-  cursor:pointer;
-  font-weight:bold;
+    flex:1;
+    padding:15px;
+    cursor:pointer;
+    font-weight:bold;
 }
 
 .tab.active{
-  background:#fdf3db;
+    background:#ffe4f2;
 }
 
 /* ===== 画面 ===== */
 .screen{
-  display:none;
-  padding:20px;
+    display:none;
+    padding:30px 15px 60px;
 }
 
 .screen.active{
-  display:block;
+    display:block;
 }
 
-/* ===== TXT変換 ===== */
-.container{
-  background:#ffffff;
-  max-width:500px;
-  margin:30px auto;
-  padding:30px;
-  border-radius:30px;
-  box-shadow:0 15px 40px rgba(0,0,0,0.08);
-  text-align:center;
-  animation:float 3s ease-in-out infinite;
+/* ===== 共通カード ===== */
+.card{
+    background:white;
+    padding:25px;
+    border-radius:30px;
+    width:100%;
+    max-width:500px;
+    margin:auto;
+    box-shadow:0 15px 40px rgba(0,0,0,0.15);
+}
+
+/* ボタン */
+button{
+    width:100%;
+    padding:14px;
+    margin:10px 0;
+    border:none;
+    border-radius:25px;
+    font-size:16px;
+    font-weight:bold;
+    background:#ff9ad5;
+    color:white;
+}
+
+/* ふわふわ */
+.fuwa{
+    animation:float 3s ease-in-out infinite;
 }
 
 @keyframes float{
-  0%{transform:translateY(0px);}
-  50%{transform:translateY(-8px);}
-  100%{transform:translateY(0px);}
+    0%{transform:translateY(0);}
+    50%{transform:translateY(-6px);}
+    100%{transform:translateY(0);}
 }
 
+/* ファイル */
 .file-label{
-  display:block;
-  padding:20px;
-  background:#fffaf0;
-  border:2px dashed #e6d8b5;
-  border-radius:25px;
-  cursor:pointer;
-  margin-bottom:20px;
+    display:block;
+    padding:18px;
+    background:#7ddfff;
+    border-radius:25px;
+    color:white;
+    margin:15px 0;
+    cursor:pointer;
 }
 
 input[type="file"]{
-  display:none;
+    display:none;
 }
 
-button{
-  background:#fffaf0;
-  border:none;
-  padding:15px 20px;
-  margin:10px;
-  border-radius:30px;
-  cursor:pointer;
-  font-size:16px;
-  box-shadow:0 8px 20px rgba(0,0,0,0.1);
+/* 進捗 */
+.progress-box{
+    margin-top:20px;
+    width:100%;
+    background:#f3f3f3;
+    border-radius:50px;
+    overflow:hidden;
 }
 
-/* ===== HTMLプレビュー ===== */
-.editor-container{
-  height:80vh;
-  display:flex;
-  flex-direction:column;
+.progress-bar{
+    height:24px;
+    width:0%;
+    border-radius:50px;
+    background:linear-gradient(90deg,#ff9ad5,#7ddfff);
+    color:white;
+    line-height:24px;
+    transition:0.4s;
 }
 
-.editor-body{
-  flex:1;
-  display:flex;
+/* ===== HTMLエディタ ===== */
+.editor{
+    display:flex;
+    height:70vh;
 }
 
 textarea{
-  width:50%;
-  border:none;
-  padding:20px;
-  font-size:16px;
-  outline:none;
-  resize:none;
-  background:#fffaf0;
+    width:50%;
+    border:none;
+    padding:20px;
+    resize:none;
 }
 
 iframe{
-  width:50%;
-  border:none;
-}
-
-.editor-header{
-  background:#fffaf0;
-  padding:10px;
-  text-align:center;
-  box-shadow:0 5px 20px rgba(0,0,0,0.08);
-}
-
-.fullscreen iframe{
-  width:100%;
+    width:50%;
+    border:none;
 }
 
 @media(max-width:768px){
-  .editor-body{
-    flex-direction:column;
-  }
-  textarea,iframe{
-    width:100%;
-    height:50%;
-  }
+    .editor{
+        flex-direction:column;
+    }
+    textarea,iframe{
+        width:100%;
+        height:50%;
+    }
 }
 </style>
 </head>
-
 <body>
 
 <!-- タブ -->
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('txt', this)">TXT変換</div>
-  <div class="tab" onclick="switchTab('html', this)">HTMLプレビュー</div>
+    <div class="tab active" onclick="switchTab('main',this)">変換ラボ</div>
+    <div class="tab" onclick="switchTab('txt',this)">TXT変換</div>
+    <div class="tab" onclick="switchTab('html',this)">HTMLプレビュー</div>
 </div>
 
-<!-- ===== TXT変換画面 ===== -->
-<div id="txt" class="screen active">
-  <div class="container">
-    <h2>🌸 TXT → PDF / PPTX 🌸</h2>
+<!-- ===== メイン変換ラボ ===== -->
+<div id="main" class="screen active">
+<div class="card fuwa">
 
-    <label class="file-label">
-      📄 TXTファイルを選択
-      <input type="file" id="fileInput" accept=".txt">
-    </label>
+<h2>🌸 ふわふわ変換ラボ 🌸</h2>
 
-    <button onclick="convertToPDF()">PDFに変換</button>
-    <button onclick="convertToPPT()">PPTXに変換</button>
+<label class="file-label">
+📁 ファイルを選ぶ
+<input type="file" id="fileInput">
+</label>
 
-    <div style="font-size:12px;color:#c5b79e;">ふわふわ変換ツール ✨</div>
-  </div>
+<div id="fileName" style="font-size:14px;color:#666;"></div>
+
+<button onclick="startConvert()">✨ ふわっと変換する ✨</button>
+
+<div class="progress-box">
+<div class="progress-bar" id="progressBar">0%</div>
 </div>
 
-<!-- ===== HTMLプレビュー画面 ===== -->
+</div>
+</div>
+
+<!-- ===== TXT変換 ===== -->
+<div id="txt" class="screen">
+<div class="card fuwa">
+<h2>TXT → PDF / PPTX</h2>
+
+<label class="file-label">
+📄 TXTを選択
+<input type="file" id="txtInput" accept=".txt">
+</label>
+
+<button onclick="convertToPDF()">PDFに変換</button>
+<button onclick="convertToPPT()">PPTXに変換</button>
+
+</div>
+</div>
+
+<!-- ===== HTMLプレビュー ===== -->
 <div id="html" class="screen">
-  <div class="editor-container">
-
-    <div class="editor-header">
-      HTMLライブプレビュー 🚀
-      <button onclick="downloadHTML()">ダウンロード</button>
-      <button onclick="activatePreview()">起動成功</button>
-    </div>
-
-    <div class="editor-body" id="editorContainer">
-      <textarea id="code" placeholder="ここにコードを打つ"></textarea>
-      <iframe id="preview"></iframe>
-    </div>
-
-  </div>
+<div class="editor">
+<textarea id="code" placeholder="ここにコードを打つ"></textarea>
+<iframe id="preview"></iframe>
+</div>
+<button onclick="downloadHTML()">ダウンロード</button>
 </div>
 
 <script>
-/* ===== タブ切替（修正版） ===== */
-function switchTab(id, el){
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-
-  document.getElementById(id).classList.add("active");
-  el.classList.add("active");
+/* タブ切替 */
+function switchTab(id,el){
+    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    el.classList.add("active");
 }
 
-/* ===== TXT変換 ===== */
-let fileContent="";
+/* メイン変換 */
+const fileInput=document.getElementById("fileInput");
+const fileName=document.getElementById("fileName");
 
-document.getElementById("fileInput").addEventListener("change",function(e){
-  const file=e.target.files[0];
-  if(!file)return;
+fileInput.addEventListener("change",function(){
+    if(this.files.length>0){
+        fileName.innerText="選択中: "+this.files[0].name;
+    }
+});
 
-  const reader=new FileReader();
-  reader.onload=function(event){
-    fileContent=event.target.result;
-    alert("読み込み完了 ✨");
-  };
-  reader.readAsText(file,"UTF-8");
+function updateProgress(p){
+    const bar=document.getElementById("progressBar");
+    bar.style.width=p+"%";
+    bar.innerText=p+"%";
+}
+
+function startConvert(){
+    if(!fileInput.files[0]){alert("ファイルを選んでね");return;}
+    updateProgress(20);
+    setTimeout(()=>updateProgress(60),700);
+    setTimeout(()=>updateProgress(100),1500);
+}
+
+/* TXT変換 */
+let txtContent="";
+document.getElementById("txtInput").addEventListener("change",function(e){
+    const reader=new FileReader();
+    reader.onload=(ev)=>{txtContent=ev.target.result;alert("読み込み完了");};
+    reader.readAsText(e.target.files[0],"UTF-8");
 });
 
 function convertToPDF(){
-  if(!fileContent){alert("TXTファイルを選択してね 🌸");return;}
-  const { jsPDF } = window.jspdf;
-  const doc=new jsPDF();
-  const lines=doc.splitTextToSize(fileContent,180);
-  doc.text(lines,10,10);
-  doc.save("converted.pdf");
+    if(!txtContent){alert("TXT選択してね");return;}
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF();
+    doc.text(txtContent,10,10);
+    doc.save("converted.pdf");
 }
 
 function convertToPPT(){
-  if(!fileContent){alert("TXTファイルを選択してね 🌸");return;}
-  let pptx=new PptxGenJS();
-  let slide=pptx.addSlide();
-  slide.addText(fileContent,{
-    x:1,y:1,w:8,h:5,fontSize:18,color:"333333"
-  });
-  pptx.writeFile("converted.pptx");
+    if(!txtContent){alert("TXT選択してね");return;}
+    let pptx=new PptxGenJS();
+    let slide=pptx.addSlide();
+    slide.addText(txtContent,{x:1,y:1,w:8,h:5});
+    pptx.writeFile("converted.pptx");
 }
 
-/* ===== HTMLプレビュー ===== */
+/* HTMLプレビュー */
 const textarea=document.getElementById("code");
 const preview=document.getElementById("preview");
-const container=document.getElementById("editorContainer");
-
-function updatePreview(){
-  preview.srcdoc=textarea.value||"<h2>プレビュー待機中...</h2>";
-}
-textarea.addEventListener("input",updatePreview);
-updatePreview();
+textarea.addEventListener("input",()=>preview.srcdoc=textarea.value);
 
 function downloadHTML(){
-  const blob=new Blob([textarea.value],{type:"text/html"});
-  const link=document.createElement("a");
-  link.href=URL.createObjectURL(blob);
-  link.download="index.html";
-  link.click();
-}
-
-function activatePreview(){
-  container.classList.add("fullscreen");
+    const blob=new Blob([textarea.value],{type:"text/html"});
+    const link=document.createElement("a");
+    link.href=URL.createObjectURL(blob);
+    link.download="index.html";
+    link.click();
 }
 </script>
 
