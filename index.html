@@ -1,273 +1,293 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ふわふわスーパー変換ラボ</title>
-
-<!-- ライブラリ -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
-
-<style>
-body{
-    margin:0;
-    font-family:"Hiragino Maru Gothic ProN",sans-serif;
-    background:linear-gradient(135deg,#ffd6f9,#c8f1ff);
-    text-align:center;
-}
-
-/* ===== タブ ===== */
-.tabs{
-    display:flex;
-    background:white;
-    box-shadow:0 5px 20px rgba(0,0,0,0.1);
-}
-
-.tab{
-    flex:1;
-    padding:15px;
-    cursor:pointer;
-    font-weight:bold;
-}
-
-.tab.active{
-    background:#ffe4f2;
-}
-
-/* ===== 画面 ===== */
-.screen{
-    display:none;
-    padding:30px 15px 60px;
-}
-
-.screen.active{
-    display:block;
-}
-
-/* ===== 共通カード ===== */
-.card{
-    background:white;
-    padding:25px;
-    border-radius:30px;
-    width:100%;
-    max-width:500px;
-    margin:auto;
-    box-shadow:0 15px 40px rgba(0,0,0,0.15);
-}
-
-/* ボタン */
-button{
-    width:100%;
-    padding:14px;
-    margin:10px 0;
-    border:none;
-    border-radius:25px;
-    font-size:16px;
-    font-weight:bold;
-    background:#ff9ad5;
-    color:white;
-}
-
-/* ふわふわ */
-.fuwa{
-    animation:float 3s ease-in-out infinite;
-}
-
-@keyframes float{
-    0%{transform:translateY(0);}
-    50%{transform:translateY(-6px);}
-    100%{transform:translateY(0);}
-}
-
-/* ファイル */
-.file-label{
-    display:block;
-    padding:18px;
-    background:#7ddfff;
-    border-radius:25px;
-    color:white;
-    margin:15px 0;
-    cursor:pointer;
-}
-
-input[type="file"]{
-    display:none;
-}
-
-/* 進捗 */
-.progress-box{
-    margin-top:20px;
-    width:100%;
-    background:#f3f3f3;
-    border-radius:50px;
-    overflow:hidden;
-}
-
-.progress-bar{
-    height:24px;
-    width:0%;
-    border-radius:50px;
-    background:linear-gradient(90deg,#ff9ad5,#7ddfff);
-    color:white;
-    line-height:24px;
-    transition:0.4s;
-}
-
-/* ===== HTMLエディタ ===== */
-.editor{
-    display:flex;
-    height:70vh;
-}
-
-textarea{
-    width:50%;
-    border:none;
-    padding:20px;
-    resize:none;
-}
-
-iframe{
-    width:50%;
-    border:none;
-}
-
-@media(max-width:768px){
-    .editor{
-        flex-direction:column;
-    }
-    textarea,iframe{
-        width:100%;
-        height:50%;
-    }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>オンライン変換 - ブラウザで完結するファイル変換ツール</title>
+    <!-- Tailwind CSS 4 -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <!-- Google Fonts: M PLUS Rounded 1c -->
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: #fffafa;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
 <body>
+    <div id="root"></div>
 
-<!-- タブ -->
-<div class="tabs">
-    <div class="tab active" onclick="switchTab('main',this)">変換ラボ</div>
-    <div class="tab" onclick="switchTab('txt',this)">TXT変換</div>
-    <div class="tab" onclick="switchTab('html',this)">HTMLプレビュー</div>
-</div>
-
-<!-- ===== メイン変換ラボ ===== -->
-<div id="main" class="screen active">
-<div class="card fuwa">
-
-<h2>🌸 ふわふわ変換ラボ 🌸</h2>
-
-<label class="file-label">
-📁 ファイルを選ぶ
-<input type="file" id="fileInput">
-</label>
-
-<div id="fileName" style="font-size:14px;color:#666;"></div>
-
-<button onclick="startConvert()">✨ ふわっと変換する ✨</button>
-
-<div class="progress-box">
-<div class="progress-bar" id="progressBar">0%</div>
-</div>
-
-</div>
-</div>
-
-<!-- ===== TXT変換 ===== -->
-<div id="txt" class="screen">
-<div class="card fuwa">
-<h2>TXT → PDF / PPTX</h2>
-
-<label class="file-label">
-📄 TXTを選択
-<input type="file" id="txtInput" accept=".txt">
-</label>
-
-<button onclick="convertToPDF()">PDFに変換</button>
-<button onclick="convertToPPT()">PPTXに変換</button>
-
-</div>
-</div>
-
-<!-- ===== HTMLプレビュー ===== -->
-<div id="html" class="screen">
-<div class="editor">
-<textarea id="code" placeholder="ここにコードを打つ"></textarea>
-<iframe id="preview"></iframe>
-</div>
-<button onclick="downloadHTML()">ダウンロード</button>
-</div>
-
-<script>
-/* タブ切替 */
-function switchTab(id,el){
-    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-    el.classList.add("active");
-}
-
-/* メイン変換 */
-const fileInput=document.getElementById("fileInput");
-const fileName=document.getElementById("fileName");
-
-fileInput.addEventListener("change",function(){
-    if(this.files.length>0){
-        fileName.innerText="選択中: "+this.files[0].name;
+    <!-- 外部ライブラリの読み込み (ESM) -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@19?dev",
+            "react-dom": "https://esm.sh/react-dom@19?dev",
+            "react-dom/client": "https://esm.sh/react-dom@19/client?dev",
+            "lucide-react": "https://esm.sh/lucide-react@0.475.0",
+            "motion/react": "https://esm.sh/motion@12.0.0/react",
+            "jspdf": "https://esm.sh/jspdf@2.5.1",
+            "pptxgenjs": "https://esm.sh/pptxgenjs@3.12.0",
+            "pdfjs-dist": "https://esm.sh/pdfjs-dist@4.0.379",
+            "@ffmpeg/ffmpeg": "https://esm.sh/@ffmpeg/ffmpeg@0.12.10",
+            "@ffmpeg/util": "https://esm.sh/@ffmpeg/util@0.12.1"
+        }
     }
-});
+    </script>
 
-function updateProgress(p){
-    const bar=document.getElementById("progressBar");
-    bar.style.width=p+"%";
-    bar.innerText=p+"%";
-}
+    <script type="module">
+        import React, { useState, useRef, useEffect } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { 
+            FileText, FileVideo, Image as ImageIcon, Download, 
+            ArrowRight, Loader2, CheckCircle2, AlertCircle, Presentation 
+        } from 'lucide-react';
+        import { motion, AnimatePresence } from 'motion/react';
+        import { jsPDF } from 'jspdf';
+        import PptxGenJS from 'pptxgenjs';
+        import * as pdfjsLib from 'pdfjs-dist';
+        import { FFmpeg } from '@ffmpeg/ffmpeg';
+        import { fetchFile, toBlobURL } from '@ffmpeg/util';
 
-function startConvert(){
-    if(!fileInput.files[0]){alert("ファイルを選んでね");return;}
-    updateProgress(20);
-    setTimeout(()=>updateProgress(60),700);
-    setTimeout(()=>updateProgress(100),1500);
-}
+        // PDF.js Worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
-/* TXT変換 */
-let txtContent="";
-document.getElementById("txtInput").addEventListener("change",function(e){
-    const reader=new FileReader();
-    reader.onload=(ev)=>{txtContent=ev.target.result;alert("読み込み完了");};
-    reader.readAsText(e.target.files[0],"UTF-8");
-});
+        // --- Converter Utils ---
+        const txtToPdf = async (text) => {
+            const doc = new jsPDF();
+            const splitText = doc.splitTextToSize(text, 180);
+            doc.text(splitText, 10, 10);
+            return doc.output('blob');
+        };
 
-function convertToPDF(){
-    if(!txtContent){alert("TXT選択してね");return;}
-    const {jsPDF}=window.jspdf;
-    const doc=new jsPDF();
-    doc.text(txtContent,10,10);
-    doc.save("converted.pdf");
-}
+        const imagesToPdf = async (images) => {
+            const doc = new jsPDF();
+            for (let i = 0; i < images.length; i++) {
+                const imgData = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.readAsDataURL(images[i]);
+                });
+                if (i > 0) doc.addPage();
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                doc.addImage(imgData, 'JPEG', 10, 10, pageWidth - 20, pageHeight - 20);
+            }
+            return doc.output('blob');
+        };
 
-function convertToPPT(){
-    if(!txtContent){alert("TXT選択してね");return;}
-    let pptx=new PptxGenJS();
-    let slide=pptx.addSlide();
-    slide.addText(txtContent,{x:1,y:1,w:8,h:5});
-    pptx.writeFile("converted.pptx");
-}
+        const pdfToPptx = async (pdfFile) => {
+            const pptx = new PptxGenJS();
+            const arrayBuffer = await pdfFile.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const viewport = page.getViewport({ scale: 2 });
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                await page.render({ canvasContext: context, viewport, canvas: canvas }).promise;
+                const slide = pptx.addSlide();
+                slide.addImage({ data: canvas.toDataURL('image/png'), x: 0, y: 0, w: '100%', h: '100%' });
+            }
+            const buffer = await pptx.write({ outputType: 'arraybuffer' });
+            return new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+        };
 
-/* HTMLプレビュー */
-const textarea=document.getElementById("code");
-const preview=document.getElementById("preview");
-textarea.addEventListener("input",()=>preview.srcdoc=textarea.value);
+        // --- Main Component ---
+        function App() {
+            const [activeTab, setActiveTab] = useState(null);
+            const [state, setState] = useState({ status: 'idle' });
+            const [ffmpegLoaded, setFfmpegLoaded] = useState(false);
+            const ffmpegRef = useRef(new FFmpeg());
+            const fileInputRef = useRef(null);
 
-function downloadHTML(){
-    const blob=new Blob([textarea.value],{type:"text/html"});
-    const link=document.createElement("a");
-    link.href=URL.createObjectURL(blob);
-    link.download="index.html";
-    link.click();
-}
-</script>
+            useEffect(() => {
+                loadFfmpeg();
+            }, []);
 
+            const loadFfmpeg = async () => {
+                const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+                const ffmpeg = ffmpegRef.current;
+                try {
+                    await ffmpeg.load({
+                        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+                        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+                    });
+                    setFfmpegLoaded(true);
+                } catch (err) {
+                    console.warn('FFmpeg load failed (expected in local file mode)', err);
+                }
+            };
+
+            const handleFileChange = async (e) => {
+                const files = e.target.files;
+                if (!files || files.length === 0 || !activeTab) return;
+                setState({ status: 'loading', message: '処理中...' });
+                try {
+                    let resultBlob;
+                    let resultFilename = '';
+                    switch (activeTab) {
+                        case 'txt-to-pdf':
+                            const text = await files[0].text();
+                            resultBlob = await txtToPdf(text);
+                            resultFilename = files[0].name.replace(/\.[^/.]+$/, "") + ".pdf";
+                            setState({ status: 'success', resultBlob, resultFilename, showPptxPrompt: true });
+                            break;
+                        case 'images-to-pdf':
+                            resultBlob = await imagesToPdf(Array.from(files));
+                            resultFilename = "converted_images.pdf";
+                            setState({ status: 'success', resultBlob, resultFilename, showPptxPrompt: true });
+                            break;
+                        case 'pdf-to-pptx':
+                            resultBlob = await pdfToPptx(files[0]);
+                            resultFilename = files[0].name.replace(/\.[^/.]+$/, "") + ".pptx";
+                            setState({ status: 'success', resultBlob, resultFilename });
+                            break;
+                        case 'video-to-mp3':
+                            if (!ffmpegLoaded) throw new Error('動画エンジンが利用できません。サーバー経由で実行してください。');
+                            const ffmpeg = ffmpegRef.current;
+                            await ffmpeg.writeFile('input', await fetchFile(files[0]));
+                            await ffmpeg.exec(['-i', 'input', 'output.mp3']);
+                            const data = await ffmpeg.readFile('output.mp3');
+                            resultBlob = new Blob([data], { type: 'audio/mp3' });
+                            resultFilename = files[0].name.replace(/\.[^/.]+$/, "") + ".mp3";
+                            setState({ status: 'success', resultBlob, resultFilename });
+                            break;
+                    }
+                } catch (err) {
+                    setState({ status: 'error', message: err.message });
+                }
+            };
+
+            const tools = [
+                { id: 'txt-to-pdf', label: 'テキストをPDFに', icon: FileText, accept: '.txt', description: 'テキストをPDFに変換します' },
+                { id: 'images-to-pdf', label: '画像をPDFに', icon: ImageIcon, accept: 'image/*', multiple: true, description: '画像をPDFにまとめます' },
+                { id: 'video-to-mp3', label: '動画をMP3に', icon: FileVideo, accept: 'video/*', description: '動画から音声を抽出します' },
+                { id: 'pdf-to-pptx', label: 'PDFをPPTXに', icon: Presentation, accept: '.pdf', description: 'PDFをスライドに変換します' },
+            ];
+
+            const activeToolInfo = tools.find(t => t.id === activeTab);
+            const ActiveIcon = activeToolInfo?.icon;
+
+            return (
+                <div className="min-h-screen p-6 md:p-12 selection:bg-zinc-900 selection:text-white">
+                    <div className="max-w-5xl mx-auto">
+                        <header className="mb-12 text-center">
+                            <h1 className="text-4xl font-bold tracking-tight text-zinc-900 mb-2">オンライン変換</h1>
+                            <p className="text-zinc-500">ブラウザで完結する、プロ仕様のファイル変換ツール</p>
+                        </header>
+
+                        {!activeTab ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {tools.map((tool) => (
+                                    <motion.button
+                                        key={tool.id}
+                                        whileHover={{ y: -5 }}
+                                        onClick={() => setActiveTab(tool.id)}
+                                        className="bg-white p-8 rounded-3xl shadow-sm border border-zinc-100 text-left hover:border-zinc-300 transition-all group"
+                                    >
+                                        <div className="w-14 h-14 bg-zinc-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-zinc-900 group-hover:text-white transition-colors">
+                                            <tool.icon size={28} />
+                                        </div>
+                                        <h3 className="text-xl font-bold mb-2">{tool.label}</h3>
+                                        <p className="text-zinc-500 text-sm">{tool.description}</p>
+                                    </motion.button>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="bg-white rounded-3xl shadow-sm border border-zinc-100 overflow-hidden">
+                                <div className="p-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50">
+                                    <div className="flex items-center gap-3">
+                                        {ActiveIcon && <ActiveIcon size={20} className="text-zinc-900" />}
+                                        <span className="font-bold">{activeToolInfo?.label}</span>
+                                    </div>
+                                    <button onClick={() => { setActiveTab(null); setState({ status: 'idle' }); }} className="text-sm text-zinc-500 hover:text-zinc-900 font-medium">← 戻る</button>
+                                </div>
+
+                                <div className="p-8 md:p-12">
+                                    <AnimatePresence mode="wait">
+                                        <motion.div key={activeTab + state.status} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex flex-col items-center justify-center min-h-[300px] text-center">
+                                            {state.status === 'idle' && (
+                                                <>
+                                                    <div className="w-20 h-20 bg-zinc-50 rounded-full flex items-center justify-center mb-6">
+                                                        {ActiveIcon && <ActiveIcon size={40} className="text-zinc-400" />}
+                                                    </div>
+                                                    <h2 className="text-xl font-semibold mb-2">{activeToolInfo?.label}を開始</h2>
+                                                    {activeTab === 'txt-to-pdf' ? (
+                                                        <div className="w-full max-w-2xl">
+                                                            <textarea placeholder="ここにテキストを貼り付けてください..." className="w-full h-48 p-4 rounded-2xl border border-zinc-200 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 outline-none transition-all mb-4 resize-none text-left" onChange={(e) => window._pastedText = e.target.value} />
+                                                            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                                                <button onClick={async () => {
+                                                                    const text = window._pastedText;
+                                                                    if (!text) return;
+                                                                    setState({ status: 'loading', message: '処理中...' });
+                                                                    try {
+                                                                        const resultBlob = await txtToPdf(text);
+                                                                        setState({ status: 'success', resultBlob, resultFilename: "pasted_content.pdf", showPptxPrompt: true });
+                                                                    } catch (err) { setState({ status: 'error', message: '変換に失敗しました' }); }
+                                                                }} className="bg-zinc-900 text-white px-8 py-3 rounded-full font-medium hover:bg-zinc-800 transition-all">貼り付けた内容を変換</button>
+                                                                <button onClick={() => fileInputRef.current?.click()} className="bg-white text-zinc-900 border border-zinc-200 px-8 py-3 rounded-full font-medium hover:bg-zinc-50 transition-all">ファイルを選択</button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <button onClick={() => fileInputRef.current?.click()} className="bg-zinc-900 text-white px-8 py-3 rounded-full font-medium hover:bg-zinc-800 transition-all flex items-center gap-2">ファイルを選択 <ArrowRight size={18} /></button>
+                                                    )}
+                                                </>
+                                            )}
+                                            {state.status === 'loading' && (
+                                                <div className="flex flex-col items-center">
+                                                    <Loader2 className="animate-spin text-zinc-900 mb-4" size={48} />
+                                                    <p className="text-lg font-medium text-zinc-900">{state.message || '変換中...'}</p>
+                                                </div>
+                                            )}
+                                            {state.status === 'success' && (
+                                                <div className="flex flex-col items-center">
+                                                    <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-6"><CheckCircle2 size={40} className="text-emerald-500" /></div>
+                                                    <h2 className="text-xl font-semibold mb-2">変換が完了しました！</h2>
+                                                    <div className="flex items-center gap-2 mb-8 bg-zinc-50 px-4 py-2 rounded-xl border border-zinc-100">
+                                                        <p className="text-zinc-600 font-medium">{state.resultFilename}</p>
+                                                        <button onClick={() => {
+                                                            const url = URL.createObjectURL(state.resultBlob);
+                                                            const a = document.createElement('a'); a.href = url; a.download = state.resultFilename; a.click();
+                                                            URL.revokeObjectURL(url);
+                                                        }} className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-200 rounded-lg transition-all"><Download size={18} /></button>
+                                                    </div>
+                                                    <div className="flex flex-col sm:flex-row gap-4">
+                                                        <button onClick={() => setState({ status: 'idle' })} className="text-zinc-500 px-8 py-3 font-medium hover:text-zinc-900 transition-all">別のファイルを変換</button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {state.status === 'error' && (
+                                                <div className="flex flex-col items-center">
+                                                    <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6"><AlertCircle size={40} className="text-red-500" /></div>
+                                                    <h2 className="text-xl font-semibold mb-2">エラーが発生しました</h2>
+                                                    <p className="text-red-500 mb-8">{state.message}</p>
+                                                    <button onClick={() => setState({ status: 'idle' })} className="bg-zinc-900 text-white px-8 py-3 rounded-full font-medium hover:bg-zinc-800 transition-all">もう一度試す</button>
+                                                </div>
+                                            )}
+                                        </motion.div>
+                                    </AnimatePresence>
+                                </div>
+                            </div>
+                        )}
+
+                        <input type="file" ref={fileInputRef} onChange={handleFileChange} accept={activeToolInfo?.accept} multiple={activeToolInfo?.multiple} className="hidden" />
+
+                        <footer className="mt-12 text-center text-zinc-400 text-sm">
+                            <p>© 2026 オンライン変換. すべての処理はブラウザ内で行われます。</p>
+                        </footer>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(React.createElement(App));
+    </script>
 </body>
 </html>
